@@ -7,6 +7,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 
@@ -36,10 +37,10 @@ func main() {
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ContentAddIcon(), func() {
 			popup_content := container.NewVBox(
-				widget.NewLabel("Custom Popup Content"),
+				widget.NewLabel("Select Game Executable"),
 				widget.NewForm(
 					widget.NewFormItem("Name", nameEntry),
-					widget.NewFormItem("Path", container.NewHBox(pathEntry, browseButton)),
+					widget.NewFormItem("Path", container.NewGridWithRows(1, pathEntry, browseButton)),
 				),
 				widget.NewButton("Save", func() {
 					fmt.Println("Name:", nameEntry.Text)
@@ -50,7 +51,10 @@ func main() {
 					myWindow.Close()
 				}),
 			)
-			widget.NewModalPopUp(popup_content, myWindow.Canvas()).Show()
+			popup := widget.NewPopUp(popup_content, myWindow.Canvas())
+			popup.Resize(fyne.NewSize(350, 200))
+			popup.ShowAtPosition(fyne.NewPos(100, 100))
+			//popup.Show()
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.SettingsIcon(), func() {}),
@@ -60,15 +64,28 @@ func main() {
 		widget.NewToolbarAction(theme.HelpIcon(), func() {}),
 	)
 
-	// Create the game cards
-	appCard := createGameCard("Call of Duty", "Best Shooter", "Play")
-	cardGrid := container.NewVScroll(container.NewVBox(container.NewAdaptiveGrid(4, appCard)))
+	banner := canvas.NewImageFromFile("gameXplorer_c.png")
+	banner.FillMode = canvas.ImageFillContain
+	top_layout := container.NewGridWithRows(2, toolbar, banner)
+
+	// List games from .desktop files
+	games, err := utils.ListGames()
+	if err != nil {
+		fmt.Println("Error listing games:", err)
+		return
+	}
+	// Create game cards
+	var cards []fyne.CanvasObject
+	for _, game := range games {
+		cards = append(cards, createGameCard(game.Name, "Game", game.Exec, game.ExecDir, game.Icon))
+	}
+	cardGrid := container.NewVScroll(container.NewVBox(container.NewAdaptiveGrid(3, cards...)))
 	//thanks to https://github.com/fyne-io/fyne/issues/2825#issuecomment-1060405595
 
-	ct := container.NewBorder(toolbar, nil, cardGrid, nil, nil)
+	ct := container.NewBorder(top_layout, nil, cardGrid, nil, nil)
 	myWindow.SetContent(ct)
 
-	myWindow.Resize(fyne.NewSize(600, 400))
+	myWindow.Resize(fyne.NewSize(500, 600))
 	myWindow.ShowAndRun()
 
 	if utils.IsWineInstalled() {
@@ -78,26 +95,26 @@ func main() {
 	}
 }
 
-func createGameCard(title string, desc string, buttonText string) fyne.CanvasObject {
+func createGameCard(title string, desc string, execCommand string, dir string, icon string) fyne.CanvasObject {
 
-	button := widget.NewButton(buttonText, func() {
+	button := widget.NewButton("        Play        ", func() {
 		fyne.CurrentApp().SendNotification(fyne.NewNotification("gameXplorer", "Launching "+title+"..."))
-		cmd := exec.Command("./run.sh")
-		cmd.Dir = "/mnt/localdrive/cod/"
+		cmd := exec.Command("sh", "-c", execCommand)
+		cmd.Dir = dir
 
 		output, err := cmd.CombinedOutput()
-
 		if err != nil {
 			fmt.Printf("Error: %s\n", err)
 		}
-
 		fmt.Printf("Output: %s\n", output)
 	})
+	options := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
 
-	cardLayout := container.NewVBox(
-		button,
-	)
-	card := widget.NewCard(title, desc, cardLayout)
+	_icon := canvas.NewImageFromFile(icon)
+	_icon.FillMode = canvas.ImageFillOriginal
+	_title := widget.NewRichTextWithText(title)
+	_desc := widget.NewRichTextWithText(desc)
+	cardLayout := container.NewVBox(_icon, _title, _desc, container.NewHBox(button, options))
 
-	return card
+	return cardLayout
 }
