@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -83,4 +84,27 @@ func IsWineInstalled() bool {
 		return false
 	}
 	return true
+}
+
+func IsLutrisInstalled() bool {
+	cmd := exec.Command("which", "lutris")
+	if err := cmd.Run(); err != nil {
+		return false
+	}
+	return true
+}
+
+func ExtractEXEIcon(exePath string) error {
+	outPath := filepath.Dir(exePath)
+	err := exec.Command("mkdir", "-p", outPath).Run()
+	if err != nil {
+		return fmt.Errorf("failed to create output directory: %v", err)
+	}
+
+	cmd := exec.Command("wrestool", "-x", "--output="+outPath, "-t14", exePath)
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("failed to extract icon: %v", err)
+	}
+	return nil
 }

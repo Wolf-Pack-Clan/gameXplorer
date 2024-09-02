@@ -50,10 +50,9 @@ func main() {
 					myWindow.Close()
 				}),
 			)
-			popup := widget.NewPopUp(popup_content, myWindow.Canvas())
+			popup := widget.NewModalPopUp(popup_content, myWindow.Canvas())
 			popup.Resize(fyne.NewSize(350, 200))
-			popup.ShowAtPosition(fyne.NewPos(100, 100))
-			//popup.Show()
+			popup.Show()
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.SettingsIcon(), func() {}),
@@ -108,6 +107,7 @@ func createGameCard(title string, desc string, execCommand string, dir string, i
 		}
 		fmt.Printf("Output: %s\n", output)
 	})
+	utils.ExtractEXEIcon("/mnt/localdrive/cod/CoDMP.exe")
 	options := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
 
 	_icon := canvas.NewImageFromFile(icon)
