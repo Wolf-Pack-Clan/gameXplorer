@@ -10,6 +10,7 @@ import (
 
 type GameEntry struct {
 	Name    string
+	Desc    string
 	Exec    string
 	ExecDir string
 	Icon    string
@@ -41,7 +42,7 @@ func ListGames() ([]GameEntry, error) {
 				}
 				defer file.Close()
 
-				var name, exec, _execdir, _icon string
+				var name, _desc, exec, _execdir, _icon string
 				var isGame bool
 
 				scanner := bufio.NewScanner(file)
@@ -49,6 +50,8 @@ func ListGames() ([]GameEntry, error) {
 					line := scanner.Text()
 					if strings.HasPrefix(line, "Name=") {
 						name = strings.TrimPrefix(line, "Name=")
+					} else if strings.HasPrefix(line, "Comment=") {
+						_desc = strings.TrimPrefix(line, "Comment=")
 					} else if strings.HasPrefix(line, "Exec=") {
 						exec = strings.TrimPrefix(line, "Exec=")
 					} else if strings.HasPrefix(line, "Path=") {
@@ -61,7 +64,7 @@ func ListGames() ([]GameEntry, error) {
 				}
 
 				if isGame && name != "" && exec != "" {
-					games = append(games, GameEntry{Name: name, Exec: exec, ExecDir: _execdir, Icon: _icon})
+					games = append(games, GameEntry{Name: name, Desc: _desc, Exec: exec, ExecDir: _execdir, Icon: _icon})
 				}
 			}
 			return nil

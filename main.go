@@ -11,7 +11,6 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 
-	//"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
@@ -66,7 +65,8 @@ func main() {
 
 	banner := canvas.NewImageFromFile("gameXplorer_c.png")
 	banner.FillMode = canvas.ImageFillContain
-	top_layout := container.NewGridWithRows(2, toolbar, banner)
+	banner.SetMinSize(fyne.NewSize(384.5/1.5, 117/1.5))
+	top_layout := container.NewVBox(toolbar, widget.NewSeparator(), banner, widget.NewSeparator())
 
 	// List games from .desktop files
 	games, err := utils.ListGames()
@@ -77,7 +77,7 @@ func main() {
 	// Create game cards
 	var cards []fyne.CanvasObject
 	for _, game := range games {
-		cards = append(cards, createGameCard(game.Name, "Game", game.Exec, game.ExecDir, game.Icon))
+		cards = append(cards, createGameCard(game.Name, game.Desc, game.Exec, game.ExecDir, game.Icon))
 	}
 	cardGrid := container.NewVScroll(container.NewVBox(container.NewAdaptiveGrid(3, cards...)))
 	//thanks to https://github.com/fyne-io/fyne/issues/2825#issuecomment-1060405595
@@ -112,9 +112,10 @@ func createGameCard(title string, desc string, execCommand string, dir string, i
 
 	_icon := canvas.NewImageFromFile(icon)
 	_icon.FillMode = canvas.ImageFillOriginal
-	_title := widget.NewRichTextWithText(title)
-	_desc := widget.NewRichTextWithText(desc)
+	_title := widget.NewLabelWithStyle(title, fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
+	_desc := widget.NewLabel(desc)
+	_desc.Wrapping = fyne.TextWrapBreak
+	//_desc.TextStyle = fyne.TextStyle{}
 	cardLayout := container.NewVBox(_icon, _title, _desc, container.NewHBox(button, options))
-
 	return cardLayout
 }
