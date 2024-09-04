@@ -96,8 +96,38 @@ func SaveGame(name string, desc string, path string, shared bool) error {
 
 	_name := strings.ToLower(strings.Replace(name, " ", "-", -1))
 	_name += ".desktop"
-	err := os.WriteFile(savePath, []byte(_name), 0644)
+	savePath = filepath.Join(savePath, _name)
+	_path := filepath.Dir(path)
+
+	ExtractEXEIcon(path)
+	var icons []string
+	err := filepath.Walk(_path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && filepath.Base(path)[:len(filepath.Base(_path))] == filepath.Base(_path) {
+			icons = append(icons, path)
+		}
+		return nil
+	})
+
 	if err != nil {
+		return nil
+	}
+
+	var data string = "[Desktop Entry]\nVersion=1.1\n"
+	data += "Type=Application\n"
+	data += "Name=" + name + "\n"
+	data += "Icon=" + "\n"
+	data += "Exec=" + "\n"
+	data += "Path=" + _path + "\n"
+	data += "Actions=" + "\n"
+	data += "Categories=Game;" + "\n"
+	data += "Comment=" + desc + "\n"
+	data += "Terminal=false\nStartupNotify=false\n"
+
+	errr := os.WriteFile(savePath, []byte(data), 0644)
+	if errr != nil {
 		return fmt.Errorf("failed to save path to file: %w", err)
 	}
 	fmt.Println("savePath:", savePath)

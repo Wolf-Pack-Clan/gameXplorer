@@ -22,6 +22,8 @@ func main() {
 
 	nameEntry := widget.NewEntry()
 	nameEntry.SetPlaceHolder("Name")
+	descEntry := widget.NewEntry()
+	descEntry.SetPlaceHolder("Description")
 	pathEntry := widget.NewEntry()
 	pathEntry.SetPlaceHolder("Select game path")
 
@@ -39,10 +41,12 @@ func main() {
 				widget.NewLabel("Select Game Executable"),
 				widget.NewForm(
 					widget.NewFormItem("Name", nameEntry),
+					widget.NewFormItem("Description", descEntry),
 					widget.NewFormItem("Path", container.NewGridWithRows(1, pathEntry, browseButton)),
 				),
 				widget.NewButton("Save", func() {
 					fmt.Println("Name:", nameEntry.Text)
+					fmt.Println("Description:", descEntry.Text)
 					fmt.Println("Game Path:", pathEntry.Text)
 					myWindow.Close()
 				}),
