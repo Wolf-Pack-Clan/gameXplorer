@@ -78,6 +78,32 @@ func ListGames() ([]GameEntry, error) {
 	return games, nil
 }
 
+func SaveGame(name string, desc string, path string, shared bool) error {
+	var appsPath string
+	var savePath string
+
+	if shared {
+		appsPath = "/usr/share/applications"
+	} else {
+		appsPath = "~/.local/share/applications"
+	}
+
+	if strings.HasPrefix(appsPath, "~/") {
+		savePath = filepath.Join(os.Getenv("HOME"), appsPath[2:])
+	} else {
+		savePath = appsPath
+	}
+
+	_name := strings.ToLower(strings.Replace(name, " ", "-", -1))
+	_name += ".desktop"
+	err := os.WriteFile(savePath, []byte(_name), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to save path to file: %w", err)
+	}
+	fmt.Println("savePath:", savePath)
+	return nil
+}
+
 func IsWineInstalled() bool {
 	cmd := exec.Command("which", "wine")
 	if err := cmd.Run(); err != nil {

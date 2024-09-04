@@ -115,7 +115,6 @@ func createGameCard(title string, desc string, execCommand string, dir string, i
 	_title := widget.NewLabelWithStyle(title, fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
 	_desc := widget.NewLabel(desc)
 	_desc.Wrapping = fyne.TextWrapBreak
-	//_desc.TextStyle = fyne.TextStyle{}
 	cardLayout := container.NewVBox(_icon, _title, _desc, container.NewHBox(button, options))
 	return cardLayout
 }
