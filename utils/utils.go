@@ -81,6 +81,7 @@ func ListGames() ([]GameEntry, error) {
 func SaveGame(name string, desc string, path string, shared bool) error {
 	var appsPath string
 	var savePath string
+	var exec string
 
 	if shared {
 		appsPath = "/usr/share/applications"
@@ -98,28 +99,38 @@ func SaveGame(name string, desc string, path string, shared bool) error {
 	_name += ".desktop"
 	savePath = filepath.Join(savePath, _name)
 	_path := filepath.Dir(path)
+	executableName := filepath.Base(path)
+	if filepath.Ext(path) == ".exe" {
+		exec = "wine " + path
+	} else {
+		exec = path
+	}
 
-	ExtractEXEIcon(path)
+	//search for icons
 	var icons []string
 	err := filepath.Walk(_path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() && filepath.Base(path)[:len(filepath.Base(_path))] == filepath.Base(_path) {
+		if !info.IsDir() && strings.Contains(filepath.Base(path), executableName) { // Search for the executable name
 			icons = append(icons, path)
 		}
 		return nil
 	})
 
 	if err != nil {
-		return nil
+		return fmt.Errorf("failed to walk directory: %w", err)
+	}
+
+	if len(icons) == 0 {
+		return fmt.Errorf("no icons found for the executable: %s", executableName)
 	}
 
 	var data string = "[Desktop Entry]\nVersion=1.1\n"
 	data += "Type=Application\n"
 	data += "Name=" + name + "\n"
-	data += "Icon=" + "\n"
-	data += "Exec=" + "\n"
+	data += "Icon=" + icons[0] + "\n"
+	data += "Exec=" + exec + "\n"
 	data += "Path=" + _path + "\n"
 	data += "Actions=" + "\n"
 	data += "Categories=Game;" + "\n"
@@ -128,7 +139,7 @@ func SaveGame(name string, desc string, path string, shared bool) error {
 
 	errr := os.WriteFile(savePath, []byte(data), 0644)
 	if errr != nil {
-		return fmt.Errorf("failed to save path to file: %w", err)
+		return fmt.Errorf("failed to save desktop entry: %w", errr)
 	}
 	fmt.Println("savePath:", savePath)
 	return nil

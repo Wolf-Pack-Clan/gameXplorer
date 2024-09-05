@@ -34,6 +34,14 @@ func main() {
 			}
 		}, myWindow).Show()
 	})
+	var shared_game bool
+	shared_radio := widget.NewCheck("Shared ", func(value bool) {
+		if value {
+			shared_game = true
+		} else {
+			shared_game = false
+		}
+	})
 
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ContentAddIcon(), func() {
@@ -43,11 +51,13 @@ func main() {
 					widget.NewFormItem("Name", nameEntry),
 					widget.NewFormItem("Description", descEntry),
 					widget.NewFormItem("Path", container.NewGridWithRows(1, pathEntry, browseButton)),
+					widget.NewFormItem("", shared_radio),
 				),
 				widget.NewButton("Save", func() {
 					fmt.Println("Name:", nameEntry.Text)
 					fmt.Println("Description:", descEntry.Text)
 					fmt.Println("Game Path:", pathEntry.Text)
+					utils.SaveGame(nameEntry.Text, descEntry.Text, pathEntry.Text, shared_game)
 					myWindow.Close()
 				}),
 				widget.NewButton("Close", func() {
@@ -91,11 +101,11 @@ func main() {
 	myWindow.Resize(fyne.NewSize(500, 600))
 	myWindow.ShowAndRun()
 
-	if utils.IsWineInstalled() {
+	/*if utils.IsWineInstalled() {
 		fmt.Println("1")
 	} else {
 		fmt.Println("0")
-	}
+	}*/
 }
 
 func createGameCard(title string, desc string, execCommand string, dir string, icon string) fyne.CanvasObject {
