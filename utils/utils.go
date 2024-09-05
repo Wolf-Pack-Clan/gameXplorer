@@ -84,7 +84,7 @@ func SaveGame(name string, desc string, path string, shared bool) error {
 	var exec string
 
 	if shared {
-		appsPath = "/usr/share/applications"
+		appsPath = "/usr/local/share/applications/"
 	} else {
 		appsPath = "~/.local/share/applications"
 	}
@@ -97,8 +97,11 @@ func SaveGame(name string, desc string, path string, shared bool) error {
 
 	_name := strings.ToLower(strings.Replace(name, " ", "-", -1))
 	_name += ".desktop"
+	fmt.Println(_name, " ", savePath)
 	savePath = filepath.Join(savePath, _name)
+	fmt.Println(savePath)
 	_path := filepath.Dir(path)
+	fmt.Println(_path)
 	executableName := filepath.Base(path)
 	if filepath.Ext(path) == ".exe" {
 		exec = "wine " + path
@@ -129,7 +132,7 @@ func SaveGame(name string, desc string, path string, shared bool) error {
 	var data string = "[Desktop Entry]\nVersion=1.1\n"
 	data += "Type=Application\n"
 	data += "Name=" + name + "\n"
-	data += "Icon=" + icons[0] + "\n"
+	data += "Icon=" + icons[1] + "\n" //first file in search is exe itself
 	data += "Exec=" + exec + "\n"
 	data += "Path=" + _path + "\n"
 	data += "Actions=" + "\n"

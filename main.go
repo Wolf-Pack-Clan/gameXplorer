@@ -17,7 +17,7 @@ import (
 
 func main() {
 	// Initialize the Fyne app
-	myApp := app.New()
+	myApp := app.NewWithID("org.kazam.gameXplorer")
 	myWindow := myApp.NewWindow("gameXplorer")
 
 	nameEntry := widget.NewEntry()
@@ -51,7 +51,7 @@ func main() {
 					widget.NewFormItem("Name", nameEntry),
 					widget.NewFormItem("Description", descEntry),
 					widget.NewFormItem("Path", container.NewGridWithRows(1, pathEntry, browseButton)),
-					widget.NewFormItem("", shared_radio),
+					widget.NewFormItem("(needs root access)", shared_radio),
 				),
 				widget.NewButton("Save", func() {
 					fmt.Println("Name:", nameEntry.Text)
