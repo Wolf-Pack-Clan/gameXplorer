@@ -28,6 +28,7 @@ func main() {
 	pathEntry.SetPlaceHolder("Select game path")
 
 	browseButton := widget.NewButton("Browse...", func() {
+		pathEntry.FocusGained()
 		dialog.NewFileOpen(func(reader fyne.URIReadCloser, err error) {
 			if err == nil && reader != nil {
 				pathEntry.SetText(reader.URI().Path())
@@ -35,7 +36,7 @@ func main() {
 		}, myWindow).Show()
 	})
 	var shared_game bool
-	shared_radio := widget.NewCheck("Shared ", func(value bool) {
+	shared_radio := widget.NewCheck("(must be running as root)", func(value bool) {
 		if value {
 			shared_game = true
 		} else {
@@ -43,6 +44,7 @@ func main() {
 		}
 	})
 
+	var NewGamePopUp *widget.PopUp
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ContentAddIcon(), func() {
 			popup_content := container.NewVBox(
@@ -51,22 +53,30 @@ func main() {
 					widget.NewFormItem("Name", nameEntry),
 					widget.NewFormItem("Description", descEntry),
 					widget.NewFormItem("Path", container.NewGridWithRows(1, pathEntry, browseButton)),
-					widget.NewFormItem("(needs root access)", shared_radio),
+					widget.NewFormItem("Shared", shared_radio),
 				),
 				widget.NewButton("Save", func() {
 					fmt.Println("Name:", nameEntry.Text)
 					fmt.Println("Description:", descEntry.Text)
 					fmt.Println("Game Path:", pathEntry.Text)
 					utils.SaveGame(nameEntry.Text, descEntry.Text, pathEntry.Text, shared_game)
-					myWindow.Close()
+					nameEntry.SetText("")
+					descEntry.SetText("")
+					pathEntry.SetText("")
+					shared_radio.Checked = false
+					NewGamePopUp.Hide()
 				}),
 				widget.NewButton("Close", func() {
-					myWindow.Close()
+					nameEntry.SetText("")
+					descEntry.SetText("")
+					pathEntry.SetText("")
+					shared_radio.Checked = false
+					NewGamePopUp.Hide()
 				}),
 			)
-			popup := widget.NewModalPopUp(popup_content, myWindow.Canvas())
-			popup.Resize(fyne.NewSize(350, 200))
-			popup.Show()
+			NewGamePopUp = widget.NewModalPopUp(popup_content, myWindow.Canvas())
+			NewGamePopUp.Resize(fyne.NewSize(350, 200))
+			NewGamePopUp.Show()
 		}),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarAction(theme.SettingsIcon(), func() {}),
@@ -121,7 +131,7 @@ func createGameCard(title string, desc string, execCommand string, dir string, i
 		}
 		fmt.Printf("Output: %s\n", output)
 	})
-	utils.ExtractEXEIcon("/mnt/localdrive/cod/CoDMP.exe")
+	utils.ExtractEXEIcon("/mnt/localdrive/cod/c1cx.exe")
 	options := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {})
 
 	_icon := canvas.NewImageFromFile(icon)

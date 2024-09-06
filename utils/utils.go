@@ -109,30 +109,15 @@ func SaveGame(name string, desc string, path string, shared bool) error {
 		exec = path
 	}
 
-	//search for icons
-	var icons []string
-	err := filepath.Walk(_path, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() && strings.Contains(filepath.Base(path), executableName) { // Search for the executable name
-			icons = append(icons, path)
-		}
-		return nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("failed to walk directory: %w", err)
-	}
-
-	if len(icons) == 0 {
-		return fmt.Errorf("no icons found for the executable: %s", executableName)
-	}
-
 	var data string = "[Desktop Entry]\nVersion=1.1\n"
 	data += "Type=Application\n"
 	data += "Name=" + name + "\n"
-	data += "Icon=" + icons[1] + "\n" //first file in search is exe itself
+	iconCheck, _k_ := ExtractEXEIcon(path)
+	fmt.Println(_k_)
+	if iconCheck {
+		_icon := strings.TrimSuffix(executableName, filepath.Ext(executableName)) + ".png"
+		data += "Icon=" + filepath.Join(_path, _icon) + "\n"
+	}
 	data += "Exec=" + exec + "\n"
 	data += "Path=" + _path + "\n"
 	data += "Actions=" + "\n"
@@ -164,17 +149,37 @@ func IsLutrisInstalled() bool {
 	return true
 }
 
-func ExtractEXEIcon(exePath string) error {
+func ExtractEXEIcon(exePath string) (bool, error) {
 	outPath := filepath.Dir(exePath)
-	err := exec.Command("mkdir", "-p", outPath).Run()
+	err := os.MkdirAll(outPath, 0755) // Using os.MkdirAll to create the directory
 	if err != nil {
-		return fmt.Errorf("failed to create output directory: %v", err)
+		return false, fmt.Errorf("failed to create output directory: %v", err)
 	}
 
-	cmd := exec.Command("wrestool", "-x", "--output="+outPath, "-t14", exePath)
+	exe := filepath.Base(exePath)
+	exeName := strings.TrimSuffix(exe, filepath.Ext(exe))
+	cmd := exec.Command("wrestool", "-x", "-t", "14", exePath)
+
+	outFile, err := os.Create(filepath.Join(outPath, exeName+".ico"))
+	if err != nil {
+		return false, fmt.Errorf("failed to create output file: %v", err)
+	}
+	defer outFile.Close()
+
+	cmd.Stdout = outFile
+	cmd.Stderr = os.Stderr
+
 	err = cmd.Run()
 	if err != nil {
-		return fmt.Errorf("failed to extract icon: %v", err)
+		return false, fmt.Errorf("failed to extract icon: %v", err)
 	}
-	return nil
+
+	cmd = exec.Command("convert", filepath.Join(outPath, exeName+".ico"), "-thumbnail", "32x32", filepath.Join(outPath, exeName+".png"))
+
+	err = cmd.Run()
+	if err != nil {
+		return false, fmt.Errorf("failed to extract icon: %v", err)
+	}
+
+	return true, nil
 }
