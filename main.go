@@ -48,7 +48,7 @@ func main() {
 	toolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ContentAddIcon(), func() {
 			popup_content := container.NewVBox(
-				widget.NewLabel("Select Game Executable"),
+				widget.NewLabel("Add New Game"),
 				widget.NewForm(
 					widget.NewFormItem("Name", nameEntry),
 					widget.NewFormItem("Description", descEntry),
@@ -86,9 +86,9 @@ func main() {
 		widget.NewToolbarAction(theme.HelpIcon(), func() {}),
 	)
 
-	banner := canvas.NewImageFromFile("gameXplorer_c.png")
-	banner.FillMode = canvas.ImageFillContain
-	banner.SetMinSize(fyne.NewSize(384.5/1.5, 117/1.5))
+	banner := canvas.NewImageFromFile("gameXplorer_c_s.png")
+	banner.FillMode = canvas.ImageFillOriginal
+	//banner.SetMinSize(fyne.NewSize(387.5, 117.5))
 	top_layout := container.NewVBox(toolbar, widget.NewSeparator(), banner, widget.NewSeparator())
 
 	// List games from .desktop files
